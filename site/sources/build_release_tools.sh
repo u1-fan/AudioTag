@@ -4,6 +4,11 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="$ROOT/.build/release-tools"
 PREFIX="$WORK/prefix"
 mkdir -p "$WORK"
+for archive in ffmpeg-9.0.2.tar.xz lame-4.0.tar.gz; do
+  if [[ ! -f "$WORK/$archive" && -f "$ROOT/site/sources/$archive" ]]; then
+    cp "$ROOT/site/sources/$archive" "$WORK/$archive"
+  fi
+done
 cd "$WORK"
 echo '8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e  ffmpeg-9.0.2.tar.xz' | shasum -a 256 -c -
 echo '3df5124d5ad3a98312ffd7ba6a9b36230e4f8a3e66d3ce0f425e336c32d216eb  lame-4.0.tar.gz' | shasum -a 256 -c -

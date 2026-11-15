@@ -3,7 +3,7 @@ import XCTest
 
 final class UpdateConfigurationTests: XCTestCase {
     private var configuration: [String: Any] {
-        ["SUFeedURL": "https://audiotag.xiezhixin.com/updates/appcast.xml",
+        ["SUFeedURL": "https://audiotag.u1.fan/updates/appcast.xml",
          "SUPublicEDKey": Data(repeating: 7, count: 32).base64EncodedString(),
          "CFBundleVersion": "1"]
     }
@@ -13,10 +13,10 @@ final class UpdateConfigurationTests: XCTestCase {
     }
 
     func testRejectsUnsafeOrIncompleteReleaseConfiguration() {
-        for feed in ["http://audiotag.xiezhixin.com/updates/appcast.xml",
-                     "https://user:password@audiotag.xiezhixin.com/feed",
-                     "https://audiotag.xiezhixin.com/feed?token=temporary",
-                     "https://audiotag.xiezhixin.com/feed#fragment"] {
+        for feed in ["http://audiotag.u1.fan/updates/appcast.xml",
+                     "https://user:password@audiotag.u1.fan/feed",
+                     "https://audiotag.u1.fan/feed?token=temporary",
+                     "https://audiotag.u1.fan/feed#fragment"] {
             var info = configuration
             info["SUFeedURL"] = feed
             XCTAssertNil(UpdateConfiguration(info: info), feed)

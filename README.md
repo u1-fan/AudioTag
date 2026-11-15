@@ -4,7 +4,7 @@
 
 本地音频标签工具。粘贴中文或英文歌曲信息，写入标题、歌手、专辑、流派、年份、音轨、BPM、歌词和封面。支持 MP3、FLAC、M4A/MP4（音频）、OGG Vorbis、Opus、WAV。
 
-项目已统一更名为 AudioTag，避免名称被理解为只支持 MP3。原生应用为 `AudioTag.app`，源码安装和独立二进制 CLI 均使用 `audiotag` 命令，不再保留旧命令。Python 包为 `audiotag`，SwiftPM 目标为 `AudioTagApp` 与 `AudioTagBridge`，应用标识为 `com.brian.audiotag`。更新源地址为 `https://audiotag.xiezhixin.com/updates/appcast.xml`，发布前需先把该域名指向官网并保证 `/updates/appcast.xml` 可访问。
+项目已统一更名为 AudioTag，避免名称被理解为只支持 MP3。原生应用为 `AudioTag.app`，源码安装和独立二进制 CLI 均使用 `audiotag` 命令，不再保留旧命令。Python 包为 `audiotag`，SwiftPM 目标为 `AudioTagApp` 与 `AudioTagBridge`，应用标识为 `com.brian.audiotag`。更新源地址为 `https://audiotag.u1.fan/updates/appcast.xml`，发布前需先把该域名指向官网并保证 `/updates/appcast.xml` 可访问。
 
 ## SwiftUI macOS 应用与 AI 二进制
 
@@ -32,11 +32,12 @@ task macos:install-only       # 安装已有构建产物
 task macos:install            # 构建并安装
 task macos:run                # 构建并启动，不安装
 task macos:ci                 # 检查、测试、构建，不安装
+task macos:release:dmg        # 生成 Apple Silicon DMG，公证前本地校验
 ```
 
 旧名称 `macos-build`、`macos-install-only` 和 `macos-install` 仍保留为兼容入口。`macos:install-only` 默认把 `AudioTag.app` 安装到 `/Applications`，把独立 AI CLI `audiotag` 及其 FFmpeg 工具安装到 `/usr/local/bin`；安装前会暂存并校验新产物，失败时尝试恢复旧版本。可用 `INSTALL_APP`、`INSTALL_BIN` 和 `INSTALL_TOOLS` 覆盖安装目标，测试安装时应使用临时目录。
 
-发行前检查与发行流程分别使用 `task macos:release:preflight` 和 `task macos:release`。发行流程会运行项目已有测试、签名、公证并生成本地发行制品，但不会上传；需要通过环境变量提供 `SIGNING_IDENTITY`、`NOTARY_PROFILE` 和 `SPARKLE_KEY_ACCOUNT`。`task macos:clean` 只清理 `dist/` 与 `.build/`，不会删除 `.venv/` 或 `site/`。
+发行前检查与发行流程分别使用 `task macos:release:preflight` 和 `task macos:release`；只生成 DMG 时使用 `task macos:release:dmg`。发行流程会运行项目已有测试、签名、公证并生成本地发行制品，但不会上传；需要通过环境变量提供 `SIGNING_IDENTITY`、`NOTARY_PROFILE` 和 `SPARKLE_KEY_ACCOUNT`。`task macos:clean` 只清理 `dist/` 与 `.build/`，不会删除 `.venv/` 或 `site/`。
 
 Codex 的 Run 按钮已连接构建脚本。现有网页入口保留，新增视频转换流程以 SwiftUI 和 AI 二进制为入口。
 
@@ -124,4 +125,4 @@ JSON 字段：`title`、`artist`、`album`、`genre`、`year`、`track`、`bpm`�
 
 静态官网源码位于 `site/`，参考 music 项目的陶土红唱片视觉与 `app-platform` 托管方式。原生端已接入 Sparkle 2.10.0，提供检查更新与自动检查设置；版本、公钥和更新源统一记录在 `Config/Release.json`。
 
-目前处于发行准备阶段：已有 Developer ID 签名的 Apple Silicon 构建，尚未完成 Apple 公证或公开部署。平台登录、公证凭据及 Python 引擎源码许可确认仍是发布前置条件。构建、公证、签名清单与部署步骤见 [RELEASE.md](RELEASE.md)；不要把本机调试包当作已公证发行包上传。
+本地调试构建默认使用 ad-hoc 签名；正式发行使用 `script/package_dmg.sh` 生成 Apple Silicon DMG，再用 `xcrun notarytool` 公证并装订票据。`.github/workflows/release-dmg.yml` 已配置 Developer ID、App Store Connect API Key、Sparkle Ed25519 私钥和 GitHub Release 的自动流程，所需 Secrets 与官网同步步骤见 [RELEASE.md](RELEASE.md)。官网发布地址为 `https://audiotag.u1.fan/`，Sparkle 更新源为 `https://audiotag.u1.fan/updates/appcast.xml`。

@@ -56,28 +56,12 @@ def write_info_plist(contents: Path) -> None:
     (contents / "Info.plist").write_bytes(plistlib.dumps(info))
 
 
-def sign(path: Path, identity: str) -> None:
-    """按给定身份签名，ad-hoc 签名不带运行时与时间戳。"""
-    command = ["codesign", "--force", "--sign", identity, "--preserve-metadata=entitlements"]
-    if identity != "-":
-        command += ["--options", "runtime", "--timestamp"]
-    subprocess.run(command + [str(path)], check=True, capture_output=True)
-
-
 def sign_bundle(app: Path, identity: str) -> None:
-    """嵌套代码由内向外签名，最后校验整个应用包。"""
-    contents = app / "Contents"
-    files = [path for path in contents.rglob("*") if path.is_file() and not path.is_symlink()]
-    for path in sorted(files, key=lambda item: len(item.parts), reverse=True):
-        with path.open("rb") as stream:
-            magic = stream.read(4)
-        if magic in [b"\xcf\xfa\xed\xfe", b"\xce\xfa\xed\xfe", b"\xca\xfe\xba\xbe", b"\xca\xfe\xba\xbf"]:
-            sign(path, identity)
-    for path in sorted(contents.rglob("*"), key=lambda item: len(item.parts), reverse=True):
-        if path.is_dir() and not path.is_symlink() and path.suffix in [".xpc", ".app", ".framework"]:
-            sign(path, identity)
-    sign(app, identity)
-    subprocess.run(["codesign", "--verify", "--deep", "--strict", str(app)], check=True)
+    """调用统一签名脚本，按 Sparkle 要求处理嵌套 XPC 与框架。"""
+    subprocess.run(
+        ["bash", str(root / "script/sign_macos_app.sh"), str(app), identity],
+        check=True,
+    )
 
 
 def main():

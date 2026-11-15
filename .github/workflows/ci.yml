@@ -31,6 +31,18 @@ jobs:
           node-version: '20'
       - run: node --test tests/site.test.cjs tests/local_editor.test.cjs
 
+  release-metadata:
+    name: Release metadata and scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check release metadata
+        run: python3 script/release_check.py
+      - name: Check Python and shell syntax
+        run: |
+          python3 -m py_compile script/*.py
+          bash -n script/*.sh
+
   swift:
     name: Swift tests
     # Package.swift 声明 swift-tools-version 6.0.0，需要 Swift 6 工具链。

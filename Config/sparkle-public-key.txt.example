@@ -1,0 +1,4 @@
+# Generate once with Sparkle's generate_keys tool, then save only the public
+# base64 key in Config/sparkle-public-key.txt and Config/Release.json.
+# Keep the private key in the macOS Keychain or GitHub Secret
+# SPARKLE_EDDSA_PRIVATE_KEY.

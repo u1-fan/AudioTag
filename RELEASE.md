@@ -21,13 +21,13 @@ swift test
 node --test tests/site.test.cjs tests/local_editor.test.cjs
 ```
 
-正式发行还需要 FFmpeg 与 LAME 的校验源码，放入 `.build/release-tools/` 后执行：
+正式发行还需要 FFmpeg 与 LAME 的校验源码。仓库的 `site/sources/` 已提供对应归档；脚本会在缺少本地副本时自动复制到 `.build/release-tools/`：
 
 ```sh
 bash script/build_release_tools.sh
 ```
 
-## 公证发行
+## 本地公证发行
 
 为避免误用维护者身份，发行脚本要求显式提供签名身份、公证配置和 Sparkle 钥匙串账户：
 
@@ -38,9 +38,32 @@ SPARKLE_KEY_ACCOUNT='<Sparkle 私钥账户名>' \
 bash script/prepare_release.sh
 ```
 
-脚本会测试、构建、签名、公证、装订票据并生成 `site/` 下的发行文件。只有确认 Apple 公证通过、签名有效、下载地址正确且对应源码归档齐全后，才能发布网站和更新源。
+脚本会测试、构建、签名、公证、装订票据并生成发行文件。`script/package_dmg.sh` 负责生成带 `Applications` 快捷方式的 DMG；`script/sign_macos_app.sh` 会按 Sparkle 的 XPC、Updater 和框架顺序签名嵌套代码。只有确认 Apple 公证通过、签名有效、下载地址正确且对应源码归档齐全后，才能发布网站和更新源。
+
+本地 DMG 打包需要先准备 `.venv/bin/pyinstaller`、Developer ID 证书、公证配置和 Sparkle 私钥账户：
 
 ```sh
+SIGNING_IDENTITY='Developer ID Application: <维护者>' \
+DIST_DIR="$PWD/dist/release" \
+bash script/package_dmg.sh 1.0.0
+```
+
+随后使用 `xcrun notarytool submit` 提交 `dist/release/AudioTag-v1.0.0-macOS-arm64.dmg`，状态为 `Accepted` 后执行 `xcrun stapler staple`、`xcrun stapler validate` 和 `spctl --assess`。已有的 `script/prepare_release.sh` 仍适合使用钥匙串中的 `NOTARY_PROFILE` 完成 ZIP 应用公证和官网文件生成。
+
+## GitHub Actions 公证发行
+
+仓库中的 `.github/workflows/release-dmg.yml` 提供参考 `ZhiziTime` 的一键流程：校验版本、在 Apple Silicon runner 上构建 DMG、导入 Developer ID 证书、使用 App Store Connect API Key 公证并装订票据、用 Sparkle Ed25519 私钥生成带签名的 appcast，最后创建 GitHub Release。
+
+在仓库 Settings → Secrets and variables → Actions 中配置以下 Secrets：
+
+- `DEVELOPER_ID_CERTIFICATE_BASE64`、`DEVELOPER_ID_CERTIFICATE_PASSWORD`
+- `APPLE_API_KEY_P8_BASE64`、`APPLE_API_KEY_ID`、`APPLE_API_ISSUER_ID`
+- `SPARKLE_EDDSA_PRIVATE_KEY`
+
+私钥只放在 macOS 钥匙串或 GitHub Secret。使用 `script/configure_sparkle_keys.sh setup` 生成或核对公钥；不要把私钥写入仓库。手动运行 workflow 时，版本必须与 `Config/Release.json` 的 `version` 一致。workflow 生成的 `appcast.xml` 需要同步到官网的 `updates/appcast.xml`，下载地址使用 GitHub Release 的版本化制品地址。
+
+```sh
+python3 script/release_check.py
 python3 script/check_site.py
 ```
 

@@ -14,7 +14,7 @@ function page(fetch) {
     append(...children) { this.children.push(...children); }
   });
   const document = {
-    baseURI: "https://audiotag.xiezhixin.com/",
+    baseURI: "https://audiotag.u1.fan/",
     querySelector(selector) {
       if (!elements.has(selector)) elements.set(selector, element());
       return elements.get(selector);
@@ -22,7 +22,7 @@ function page(fetch) {
     createElement: element,
     createTextNode(text) { return { textContent: text }; }
   };
-  const context = { URL, document, location: { origin: "https://audiotag.xiezhixin.com" }, fetch };
+  const context = { URL, document, location: { origin: "https://audiotag.u1.fan" }, fetch };
   vm.runInNewContext(source + "\nglobalThis.api = {safeLocalFile, loadRelease};", context);
   return { api: context.api, elements };
 }
@@ -30,7 +30,7 @@ function page(fetch) {
 test("下载地址限制在本站发行目录，拒绝编码路径、外链与查询凭据", () => {
   const { api } = page(() => new Promise(() => {}));
   assert.equal(api.safeLocalFile("downloads/audiotag-1.0.0-1.zip", "downloads/").href,
-    "https://audiotag.xiezhixin.com/downloads/audiotag-1.0.0-1.zip");
+    "https://audiotag.u1.fan/downloads/audiotag-1.0.0-1.zip");
   for (const path of [
     "https://attacker.invalid/app.zip", "//attacker.invalid/app.zip", "downloads/../secret",
     "downloads/%2e%2e/secret", "downloads/%252e%252e/secret", "downloads/sub/app.zip",
@@ -46,7 +46,7 @@ test("版本数据更新下载入口、体积、公证提示与发行说明", as
   };
   const { api, elements } = page(async () => ({ ok: true, json: async () => release }));
   await api.loadRelease();
-  assert.equal(elements.get("[data-download]").href, "https://audiotag.xiezhixin.com/downloads/audiotag-1.0.0-1.zip");
+  assert.equal(elements.get("[data-download]").href, "https://audiotag.u1.fan/downloads/audiotag-1.0.0-1.zip");
   assert.match(elements.get("[data-download-meta]").textContent, /10\.0 MB.*Apple 公证/);
   assert.equal(elements.get("#release-list").children[0].children[1].textContent, "AudioTag 1.0.0（1）");
   assert.equal(elements.get("#release-list").children[0].children[2].textContent, release.summary);

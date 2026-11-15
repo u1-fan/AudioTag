@@ -212,6 +212,14 @@ tasks:
           NOTARY_PROFILE: '{{.NOTARY_PROFILE}}'
           SPARKLE_KEY_ACCOUNT: '{{.SPARKLE_KEY_ACCOUNT}}'
 
+  macos:release:dmg:
+    desc: 生成 Apple Silicon DMG 并校验嵌套签名，不提交 Apple 公证
+    platforms: [darwin]
+    cmds:
+      - cmd: bash script/package_dmg.sh
+        env:
+          SIGNING_IDENTITY: '{{.SIGNING_IDENTITY}}'
+
   macos:clean:
     desc: 清理本项目 dist 和 .build 构建产物，不删除虚拟环境、源码或发行站点
     platforms: [darwin]

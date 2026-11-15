@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""验证 Sparkle appcast 中当前版本的签名制品。"""
+
+import argparse
+import sys
+import urllib.parse
+import xml.etree.ElementTree as ET
+
+SPARKLE = "http://www.andymatuschak.org/xml-namespaces/sparkle"
+
+
+def verify_document(document: bytes, version: str, artifact: str) -> None:
+    root = ET.fromstring(document)
+    for item in root.findall(".//item"):
+        enclosure = item.find("enclosure")
+        if enclosure is None:
+            continue
+        version_element = item.find(f"{{{SPARKLE}}}version")
+        item_version = version_element.text if version_element is not None else enclosure.get(f"{{{SPARKLE}}}version")
+        if item_version != version:
+            continue
+        url = enclosure.get("url", "")
+        if not url or "/latest/" in url or not url.endswith(urllib.parse.quote(artifact)):
+            raise ValueError("appcast 下载地址不是版本化地址，或与制品名不一致")
+        if not enclosure.get(f"{{{SPARKLE}}}edSignature"):
+            raise ValueError("appcast 制品缺少 EdDSA 签名")
+        return
+    raise ValueError(f"appcast 没有版本 {version} 的签名条目")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("appcast")
+    parser.add_argument("version")
+    parser.add_argument("artifact")
+    args = parser.parse_args()
+    try:
+        with open(args.appcast, "rb") as stream:
+            verify_document(stream.read(), args.version, args.artifact)
+    except (OSError, ValueError, ET.ParseError) as error:
+        print(f"appcast: {error}", file=sys.stderr)
+        return 1
+    print(f"appcast: verified {args.version} {args.artifact}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
