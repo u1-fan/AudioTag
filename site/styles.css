@@ -19,6 +19,9 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
 .brand img { display: block; }
 .header nav { display: flex; gap: 30px; margin-left: auto; color: var(--muted); font-size: 13px; }
 .header nav a { padding-block: 12px; }
+.github-link { color: var(--muted); font-size: 13px; white-space: nowrap; padding-block: 12px; }
+.github-link:hover { color: var(--ink); }
+.github-link span { color: var(--accent); font-size: 16px; }
 .button { display: inline-flex; align-items: center; justify-content: space-between; gap: 30px; min-height: 50px; padding: 0 24px; border: 1px solid var(--accent); border-radius: 9px; background: var(--accent); color: var(--surface); font-size: 14px; font-weight: 600; }
 .button.small { min-height: 40px; font-size: 12px; padding-inline: 17px; gap: 18px; }
 .button span { font-size: 18px; font-weight: 400; }
@@ -123,6 +126,7 @@ h3 { font-size: 18px; line-height: 1.5; font-weight: 600; margin: 14px 0 12px; }
   .header { min-height: 80px; gap: 12px; flex-wrap: wrap; padding-block: 15px; }
   .header .brand { font-size: 22px; }
   .header > .button { margin-left: auto; }
+  .github-link { font-size: 12px; }
   .header nav { order: 3; width: 100%; margin: 0; justify-content: space-between; gap: 14px; border-top: 1px solid var(--line); padding-top: 4px; }
   .hero { grid-template-columns: 1fr; padding-block: 44px 45px; gap: 40px; }
   h1 { font-size: 43px; letter-spacing: -1.5px; }
