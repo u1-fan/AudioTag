@@ -3,6 +3,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="$ROOT/.build/release-tools"
 PREFIX="$WORK/prefix"
+if [[ -x "$ROOT/.venv/bin/python" ]]; then
+  PYTHON_BIN="$ROOT/.venv/bin/python"
+else
+  PYTHON_BIN="$(command -v python3)"
+fi
 mkdir -p "$WORK"
 for archive in ffmpeg-9.0.2.tar.xz lame-4.0.tar.gz; do
   if [[ ! -f "$WORK/$archive" && -f "$ROOT/site/sources/$archive" ]]; then
@@ -28,7 +33,7 @@ cd "$WORK/ffmpeg-9.0.2"
 make -j 8 > "$WORK/ffmpeg-make.log" 2>&1
 make install > "$WORK/ffmpeg-install.log" 2>&1
 cd "$ROOT"
-PATH="$PREFIX/bin:$PATH" AUDIOTAG_TOOLS_PREFIX="$PREFIX" .venv/bin/python script/bundle_tools.py "$WORK/bundle-encoder-only"
+PATH="$PREFIX/bin:$PATH" AUDIOTAG_TOOLS_PREFIX="$PREFIX" "$PYTHON_BIN" script/bundle_tools.py "$WORK/bundle-encoder-only"
 mkdir -p Config/Licenses site/sources
 cp "$WORK/ffmpeg-9.0.2/COPYING.LGPLv2.1" Config/Licenses/FFmpeg-LGPL-2.1.txt
 cp "$WORK/ffmpeg-9.0.2/LICENSE.md" Config/Licenses/FFmpeg-LICENSE.md
