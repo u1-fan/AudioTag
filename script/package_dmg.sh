@@ -23,10 +23,14 @@ fi
 for tool in swift python3 ditto hdiutil shasum codesign; do
   command -v "$tool" >/dev/null || { echo "缺少发行工具：$tool" >&2; exit 1; }
 done
-[[ -x "$ROOT/.venv/bin/pyinstaller" ]] || {
-  echo "缺少 .venv/bin/pyinstaller，请先安装发行依赖" >&2
+if [[ -x "$ROOT/.venv/bin/pyinstaller" ]]; then
+  PYINSTALLER=("$ROOT/.venv/bin/pyinstaller")
+elif python3 -m PyInstaller --version >/dev/null 2>&1; then
+  PYINSTALLER=(python3 -m PyInstaller)
+else
+  echo "缺少 PyInstaller，请安装 .venv/bin/pyinstaller 或当前 Python 环境的 PyInstaller" >&2
   exit 1
-}
+fi
 
 WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/audiotag-package.XXXXXX")"
 DMG_ROOT="$WORK_DIR/dmg-root"
@@ -44,7 +48,7 @@ SWIFT_BIN="$(swift build -c release --show-bin-path)/AudioTag"
 
 ENGINE_DIR="$WORK_DIR/engine"
 mkdir -p "$ENGINE_DIR"
-"$ROOT/.venv/bin/pyinstaller" --noconfirm --clean --onefile \
+"${PYINSTALLER[@]}" --noconfirm --clean --onefile \
   --codesign-identity "$IDENTITY" --name audiotag \
   --distpath "$ENGINE_DIR" --workpath "$WORK_DIR/python" --specpath "$WORK_DIR" \
   --paths "$ROOT" "$ROOT/script/engine_entry.py"
